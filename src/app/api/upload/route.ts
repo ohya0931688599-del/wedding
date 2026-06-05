@@ -28,9 +28,8 @@ export async function POST(req: NextRequest) {
     let publicUrl = ''
     let filePathForAI = ''
 
-    // Render Persistent Disk mount path is /data
-    const isRender = process.env.RENDER === 'true';
-    const baseUploadsDir = isRender ? '/data/uploads' : path.join(process.cwd(), 'data', 'uploads');
+    // Render Free plan doesn't support /data disk mounts, so we use local cwd
+    const baseUploadsDir = path.join(process.cwd(), 'uploads');
     
     try { await fs.access(baseUploadsDir) } catch { await fs.mkdir(baseUploadsDir, { recursive: true }) }
     

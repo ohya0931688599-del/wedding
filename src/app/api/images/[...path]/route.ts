@@ -7,8 +7,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
     const { path: imagePathArr } = await params
     const imagePath = imagePathArr.join('/')
     
-    const isRender = process.env.RENDER === 'true'
-    const baseUploadsDir = isRender ? '/data/uploads' : path.join(process.cwd(), 'data', 'uploads')
+    // Render Free plan doesn't support /data disk mounts, so we use local cwd
+    const baseUploadsDir = path.join(process.cwd(), 'uploads')
     
     // Prevent directory traversal attacks
     const normalizedPath = path.normalize(imagePath).replace(/^(\.\.(\/|\\|$))+/, '')
