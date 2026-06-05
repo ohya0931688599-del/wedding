@@ -258,8 +258,10 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
     )
   }
 
-  // --- Render Phase 1 ---
-  if (settings?.phase1Active) {
+  // --- Render Phase 1 & 2 ---
+  if (settings?.phase1Active || settings?.phase2Active) {
+    const activePhase = settings.phase1Active ? 1 : 2
+    const phaseQuestions = questions.filter(q => q.phase === activePhase)
     if (table.activeChallengeId) {
       // Active Challenge UI
       const activeQuestion = questions.find(q => q.id === table.activeChallengeId)
@@ -273,6 +275,14 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
               ⏱️ {elapsed} 秒
             </div>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', lineHeight: '1.4' }}>{activeQuestion?.text}</h2>
+            {activeQuestion?.type === 'PUZZLE' && activeQuestion.imageUrl && (
+              <div style={{ marginBottom: '1.5rem', border: '1px solid var(--border-gold)', borderRadius: '8px', overflow: 'hidden' }}>
+                <div style={{ padding: '0.5rem', background: 'rgba(212, 175, 55, 0.1)', color: 'var(--accent-gold)', fontSize: '0.9rem' }}>
+                  👉 請雙指放大圖片尋找密碼，或長按圖片儲存
+                </div>
+                <img src={activeQuestion.imageUrl} alt="puzzle" style={{ width: '100%', display: 'block', touchAction: 'pan-x pan-y pinch-zoom' }} />
+              </div>
+            )}
             {activeQuestion?.hint && <p style={{ color: 'var(--accent-gold)', marginBottom: '2rem', fontStyle: 'italic' }}>提示：{activeQuestion.hint}</p>}
             
             <form onSubmit={handleChallengeSubmit}>
@@ -298,11 +308,11 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
       return (
         <div className="container animate-fade-in" style={{ justifyContent: 'flex-start', paddingTop: '2rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', width: '100%', maxWidth: '600px', margin: '0 auto 2rem' }}>
-            <h1 className="title" style={{ margin: 0 }}>{table.name} 任務大廳</h1>
+            <h1 className="title" style={{ margin: 0 }}>{table.name} {activePhase === 1 ? '任務大廳' : '第二階段任務'}</h1>
           </div>
           
           <div style={{ maxWidth: '600px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {questions.map((q, idx) => {
+            {phaseQuestions.map((q, idx) => {
               const tc = table.tableChallenges?.find((t: any) => t.questionId === q.id)
               const status = tc?.status || 'IDLE'
               
@@ -366,7 +376,7 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
                     const q = questions.find(q => q.id === tc.questionId)
                     return (
                       <div key={tc.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                        <span>任務 {q?.order}：</span>
+                        <span>{q?.phase === 2 ? '[第二階段] ' : '[第一階段] '}任務 {q?.order}：</span>
                         <span style={{ color: 'var(--accent-gold)' }}>
                           {tc.status === 'COMPLETED' ? (q?.type === 'MANUAL' ? `${tc.manualScore} 分` : `${tc.timeSpent} 秒`) : '未完成'}
                         </span>

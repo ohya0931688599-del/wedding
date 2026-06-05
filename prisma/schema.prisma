@@ -10,6 +10,7 @@ datasource db {
 enum QuestionType {
   QUIZ
   MANUAL
+  PUZZLE
 }
 
 enum ChallengeStatus {
@@ -43,6 +44,8 @@ model Question {
   hint          String?
   correctAnswer String
   type          QuestionType @default(QUIZ)
+  phase         Int          @default(1)
+  imageUrl      String?
   
   answers       Answer[]
   tableChallenges TableChallenge[]
@@ -67,6 +70,7 @@ model SystemSetting {
   isEmergencyModeActive Boolean @default(false)
   activeEmergencyMode   Int     @default(0)
   phase1Active          Boolean @default(false)
+  phase2Active          Boolean @default(false)
 }
 
 model EmergencySubmission {

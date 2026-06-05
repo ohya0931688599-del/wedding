@@ -4,8 +4,8 @@ import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
 // --- Questions ---
-export async function addQuestion(data: { order: number; text: string; hint: string; correctAnswer: string; type?: 'QUIZ' | 'MANUAL' }) {
-  await prisma.question.create({ data })
+export async function addQuestion(data: { order: number; text: string; hint: string; correctAnswer: string; type?: 'QUIZ' | 'MANUAL' | 'PUZZLE'; phase?: number; imageUrl?: string }) {
+  await prisma.question.create({ data: { ...data, phase: data.phase || 1 } })
   revalidatePath('/admin/questions')
   revalidatePath('/table')
 }
@@ -108,7 +108,7 @@ export async function getTableState(token: string) {
   const settings = await prisma.systemSetting.upsert({
     where: { id: 'global' },
     update: {},
-    create: { id: 'global', isEmergencyModeActive: false, activeEmergencyMode: 0, phase1Active: false }
+    create: { id: 'global', isEmergencyModeActive: false, activeEmergencyMode: 0, phase1Active: false, phase2Active: false }
   })
   
   return { table, settings }
@@ -138,13 +138,65 @@ export async function submitAnswer(tableId: number, questionId: number, submitte
 }
 
 
-// --- Phase 1: Challenge Lobby Logic ---
+// --- Phase 1 & 2: Challenge Lobby Logic ---
 export async function togglePhase1(isActive: boolean) {
   await prisma.systemSetting.upsert({
     where: { id: 'global' },
     update: { phase1Active: isActive },
-    create: { id: 'global', phase1Active: isActive, isEmergencyModeActive: false }
+    create: { id: 'global', phase1Active: isActive, isEmergencyModeActive: false, phase2Active: false }
   })
+
+  if (!isActive) {
+    // Auto-fail uncompleted phase 1 questions
+    const tables = await prisma.table.findMany({ include: { tableChallenges: true } })
+    const phase1Questions = await prisma.question.findMany({ where: { phase: 1 } })
+    
+    for (const t of tables) {
+      for (const q of phase1Questions) {
+        const tc = t.tableChallenges.find(tc => tc.questionId === q.id)
+        if (!tc || (tc.status !== 'COMPLETED' && tc.status !== 'FAILED')) {
+          await prisma.tableChallenge.upsert({
+            where: { tableId_questionId: { tableId: t.id, questionId: q.id } },
+            update: { status: 'FAILED' },
+            create: { tableId: t.id, questionId: q.id, status: 'FAILED' }
+          })
+        }
+      }
+      await prisma.table.update({ where: { id: t.id }, data: { activeChallengeId: null, challengeStartTime: null } })
+    }
+  }
+
+  revalidatePath('/admin')
+  revalidatePath('/table')
+}
+
+export async function togglePhase2(isActive: boolean) {
+  await prisma.systemSetting.upsert({
+    where: { id: 'global' },
+    update: { phase2Active: isActive },
+    create: { id: 'global', phase2Active: isActive, phase1Active: false, isEmergencyModeActive: false }
+  })
+  
+  if (!isActive) {
+    // Auto-fail uncompleted phase 2 questions
+    const tables = await prisma.table.findMany({ include: { tableChallenges: true } })
+    const phase2Questions = await prisma.question.findMany({ where: { phase: 2 } })
+    
+    for (const t of tables) {
+      for (const q of phase2Questions) {
+        const tc = t.tableChallenges.find(tc => tc.questionId === q.id)
+        if (!tc || (tc.status !== 'COMPLETED' && tc.status !== 'FAILED')) {
+          await prisma.tableChallenge.upsert({
+            where: { tableId_questionId: { tableId: t.id, questionId: q.id } },
+            update: { status: 'FAILED' },
+            create: { tableId: t.id, questionId: q.id, status: 'FAILED' }
+          })
+        }
+      }
+      await prisma.table.update({ where: { id: t.id }, data: { activeChallengeId: null, challengeStartTime: null } })
+    }
+  }
+
   revalidatePath('/admin')
   revalidatePath('/table')
 }
@@ -275,7 +327,7 @@ export async function toggleEmergencyMode(mode: number) {
   await prisma.systemSetting.upsert({
     where: { id: 'global' },
     update: { isEmergencyModeActive: mode > 0, activeEmergencyMode: mode },
-    create: { id: 'global', isEmergencyModeActive: mode > 0, activeEmergencyMode: mode, phase1Active: false }
+    create: { id: 'global', isEmergencyModeActive: mode > 0, activeEmergencyMode: mode, phase1Active: false, phase2Active: false }
   })
   revalidatePath('/admin')
   revalidatePath('/table')
@@ -308,8 +360,8 @@ export async function resetGame() {
   
   await prisma.systemSetting.upsert({
     where: { id: 'global' },
-    update: { isEmergencyModeActive: false, activeEmergencyMode: 0, phase1Active: false },
-    create: { id: 'global', isEmergencyModeActive: false, activeEmergencyMode: 0, phase1Active: false }
+    update: { isEmergencyModeActive: false, activeEmergencyMode: 0, phase1Active: false, phase2Active: false },
+    create: { id: 'global', isEmergencyModeActive: false, activeEmergencyMode: 0, phase1Active: false, phase2Active: false }
   })
   
   revalidatePath('/admin')

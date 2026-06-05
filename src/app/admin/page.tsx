@@ -15,16 +15,27 @@ export default async function AdminDashboard() {
     <div className="card animate-fade-in">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h2 className="title" style={{ fontSize: '1.8rem', margin: 0 }}>總排行榜</h2>
-        
-        <form action={async () => {
-          'use server'
-          const { togglePhase1 } = await import('@/app/actions')
-          await togglePhase1(!settings.phase1Active)
-        }}>
-          <button type="submit" className="btn" style={{ margin: 0, padding: '0.8rem 1.5rem', background: settings.phase1Active ? '#ff4444' : 'var(--accent-gold)', color: settings.phase1Active ? 'white' : '#000', border: 'none' }}>
-            {settings.phase1Active ? '⏹ 關閉第一階段 (返回等待畫面)' : '▶️ 開始第一階段 (開放任務大廳)'}
-          </button>
-        </form>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <form action={async () => {
+            'use server'
+            const { togglePhase1 } = await import('@/app/actions')
+            await togglePhase1(!settings.phase1Active)
+          }}>
+            <button type="submit" className="btn" style={{ margin: 0, padding: '0.8rem 1.5rem', background: settings.phase1Active ? '#ff4444' : 'var(--accent-gold)', color: settings.phase1Active ? 'white' : '#000', border: 'none' }}>
+              {settings.phase1Active ? '⏹ 關閉第一階段 (返回等待畫面)' : '▶️ 開始第一階段 (開放任務大廳)'}
+            </button>
+          </form>
+
+          <form action={async () => {
+            'use server'
+            const { togglePhase2 } = await import('@/app/actions')
+            await togglePhase2(!settings.phase2Active)
+          }}>
+            <button type="submit" className="btn" style={{ margin: 0, padding: '0.8rem 1.5rem', background: settings.phase2Active ? '#ff4444' : 'var(--accent-gold)', color: settings.phase2Active ? 'white' : '#000', border: 'none' }}>
+              {settings.phase2Active ? '⏹ 關閉第二階段 (返回等待畫面)' : '▶️ 開始第二階段 (開放第二階段任務)'}
+            </button>
+          </form>
+        </div>
       </div>
 
       <ul className="leaderboard-list mt-2">
