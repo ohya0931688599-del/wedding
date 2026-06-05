@@ -64,6 +64,45 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
     }
   }, [showLeaderboard])
 
+  const playSiren = () => {
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.type = 'square';
+      
+      const now = ctx.currentTime;
+      // Classic emergency siren sound (Hi-Lo)
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.setValueAtTime(1000, now + 0.4);
+      osc.frequency.setValueAtTime(800, now + 0.8);
+      osc.frequency.setValueAtTime(1000, now + 1.2);
+      osc.frequency.setValueAtTime(800, now + 1.6);
+      osc.frequency.setValueAtTime(1000, now + 2.0);
+      
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.linearRampToValueAtTime(0, now + 2.5);
+      
+      osc.start(now);
+      osc.stop(now + 2.5);
+    } catch(e) {
+      console.error("Audio playback failed", e);
+    }
+  }
+
+  // Play sound when emergency mode is triggered
+  useEffect(() => {
+    if (settings?.activeEmergencyMode > 0) {
+      playSiren()
+    }
+  }, [settings?.activeEmergencyMode])
+
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
     if (table?.activeChallengeId && table?.challengeStartTime) {
