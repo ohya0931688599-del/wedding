@@ -23,8 +23,8 @@ export async function analyzeEmergencyPhoto(filePath: string, mode: number) {
   }
 
   try {
-    // Using gemini-1.5-flash-latest which is valid for this SDK
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" })
+    // Using gemini-2.5-flash which is the current fast model
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
     let prompt = ''
     if (mode === 1) {
