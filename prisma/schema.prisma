@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum QuestionType {
+  QUIZ
+  MANUAL
+}
+
+enum ChallengeStatus {
+  IDLE
+  ACTIVE
+  COMPLETED
+  FAILED
+}
+
+model Table {
+  id                  Int      @id @default(autoincrement())
+  name                String
+  token               String   @unique
+  score               Int      @default(0)
+  currentQuestionIndex Int      @default(0)
+  
+  // Phase 1 tracking
+  activeChallengeId   Int?
+  challengeStartTime  DateTime?
+  
+  answers             Answer[]
+  emergencySubmissions EmergencySubmission[]
+  tableChallenges     TableChallenge[]
+  playerSubmissions   PlayerSubmission[]
+}
+
+model Question {
+  id            Int      @id @default(autoincrement())
+  order         Int
+  text          String
+  hint          String?
+  correctAnswer String
+  type          QuestionType @default(QUIZ)
+  
+  answers       Answer[]
+  tableChallenges TableChallenge[]
+  playerSubmissions PlayerSubmission[]
+}
+
+model Answer {
+  id            Int      @id @default(autoincrement())
+  tableId       Int
+  questionId    Int
+  isCorrect     Boolean
+  submittedText String?
+  
+  table         Table    @relation(fields: [tableId], references: [id])
+  question      Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([tableId, questionId])
+}
+
+model SystemSetting {
+  id                    String  @id @default("global")
+  isEmergencyModeActive Boolean @default(false)
+  activeEmergencyMode   Int     @default(0)
+  phase1Active          Boolean @default(false)
+}
+
+model EmergencySubmission {
+  id        Int      @id @default(autoincrement())
+  tableId   Int
+  imageUrl  String
+  score     Int
+  comment   String
+  isTallied Boolean  @default(false)
+  mode      Int      @default(1)
+  createdAt DateTime @default(now())
+
+  table     Table    @relation(fields: [tableId], references: [id])
+}
+
+model TableChallenge {
+  id            Int      @id @default(autoincrement())
+  tableId       Int
+  questionId    Int
+  status        ChallengeStatus @default(IDLE)
+  timeSpent     Int      @default(0)
+  wrongAttempts Int      @default(0)
+  manualScore   Int?
+  
+  table         Table    @relation(fields: [tableId], references: [id])
+  question      Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([tableId, questionId])
+}
+
+model PlayerSubmission {
+  id         Int      @id @default(autoincrement())
+  tableId    Int
+  questionId Int
+  playerId   String
+  isCorrect  Boolean
+  
+  table      Table    @relation(fields: [tableId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime @default(now())
+  
+  @@unique([tableId, questionId, playerId])
+}

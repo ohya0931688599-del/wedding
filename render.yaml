@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: wedding-app
+    env: node
+    plan: free # 為了讓您先不用填信用卡測試，我改回免費版了！
+    buildCommand: npm install && npx prisma db push && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: wedding-db
+          property: connectionString
+      - key: GEMINI_API_KEY
+        sync: false # 請在 Render 後台手動填入 Google Gemini API Key
+    diskMounts:
+      - name: wedding-data
+        mountPath: /data
+
+databases:
+  - name: wedding-db
+    databaseName: wedding
+    user: wedding_user
+    plan: free # 資料庫可以使用免費版，若有預算可升級
