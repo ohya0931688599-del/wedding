@@ -105,11 +105,14 @@ export async function getTableState(token: string) {
     }
   })
   
-  const settings = await prisma.systemSetting.upsert({
-    where: { id: 'global' },
-    update: {},
-    create: { id: 'global', isEmergencyModeActive: false, activeEmergencyMode: 0, phase1Active: false, phase2Active: false }
+  let settings = await prisma.systemSetting.findUnique({
+    where: { id: 'global' }
   })
+  if (!settings) {
+    settings = await prisma.systemSetting.create({
+      data: { id: 'global', isEmergencyModeActive: false, activeEmergencyMode: 0, phase1Active: false, phase2Active: false }
+    })
+  }
   
   return { table, settings }
 }

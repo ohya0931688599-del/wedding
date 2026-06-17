@@ -52,8 +52,9 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
 
   useEffect(() => {
     fetchTableState()
-    // Increase polling interval to 5 seconds to prevent database connection exhaustion
-    const interval = setInterval(fetchTableState, 5000)
+    // Use dynamic polling interval (7s to 10s) to prevent thundering herd effect on the database
+    const randomInterval = Math.floor(Math.random() * 3000) + 7000
+    const interval = setInterval(fetchTableState, randomInterval)
     return () => clearInterval(interval)
   }, [token])
 
