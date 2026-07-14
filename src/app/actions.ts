@@ -3,6 +3,15 @@
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
+// --- Helpers ---
+function normalizeAnswer(str: string) {
+  if (!str) return ''
+  return str
+    .replace(/\s+/g, '') // Remove all whitespaces (including full-width spaces)
+    .toLowerCase()       // Case insensitive
+    .replace(/[\uFF01-\uFF5E]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0)) // Convert full-width alphanumeric to half-width
+}
+
 // --- Questions ---
 export async function addQuestion(data: { order: number; text: string; hint: string; correctAnswer: string; type?: 'QUIZ' | 'MANUAL' | 'PUZZLE' | 'IMAGE_QUIZ'; phase?: number; imageUrl?: string; imageUrls?: string[] }) {
   await prisma.question.create({ data: { ...data, phase: data.phase || 1 } })
@@ -132,7 +141,7 @@ export async function submitAnswer(tableId: number, questionId: number, submitte
   const question = await prisma.question.findUnique({ where: { id: questionId } })
   if (!question) throw new Error('Question not found')
 
-  const isCorrect = submittedText.trim() === question.correctAnswer.trim()
+  const isCorrect = normalizeAnswer(submittedText) === normalizeAnswer(question.correctAnswer)
   
   await prisma.answer.upsert({
     where: { tableId_questionId: { tableId, questionId } },
@@ -252,7 +261,7 @@ export async function submitChallengeAnswer(tableId: number, questionId: number,
   const question = await prisma.question.findUnique({ where: { id: questionId } })
   if (!table || !question) throw new Error('Not found')
 
-  const isCorrect = submittedText.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()
+  const isCorrect = normalizeAnswer(submittedText) === normalizeAnswer(question.correctAnswer)
 
   let challenge = await prisma.tableChallenge.findUnique({
     where: { tableId_questionId: { tableId, questionId } }
