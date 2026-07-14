@@ -25,70 +25,52 @@ export default function QuestionsPage() {
     const form = e.currentTarget
     const formData = new FormData(form)
     setUploading(true)
-    let imageUrl = ''
-    let imageUrls: string[] = []
     
-    if (formData.get('type') === 'PUZZLE') {
-       const file = formData.get('imageFile') as File
-       if (file && file.size > 0) {
-          const uploadData = new FormData()
-          uploadData.append('file', file)
-          const res = await fetch('/api/admin/upload', { method: 'POST', body: uploadData })
-          const resJson = await res.json()
-          if (resJson.success) {
-            imageUrl = resJson.url
-          }
-       }
-    } else if (formData.get('type') === 'IMAGE_QUIZ') {
-       const files = formData.getAll('imageFiles') as File[]
-       for (const file of files) {
-          if (file && file.size > 0) {
-            const uploadData = new FormData()
-            uploadData.append('file', file)
-            const res = await fetch('/api/admin/upload', { method: 'POST', body: uploadData })
-            const resJson = await res.json()
-            if (resJson.success) {
-              imageUrls.push(resJson.url)
+    try {
+      let imageUrl = ''
+      let imageUrls: string[] = []
+      
+      if (formData.get('type') === 'IMAGE_QUIZ') {
+         const files = formData.getAll('imageFiles') as File[]
+         for (const file of files) {
+            if (file && file.size > 0) {
+              const uploadData = new FormData()
+              uploadData.append('file', file)
+              const res = await fetch('/api/admin/upload', { method: 'POST', body: uploadData })
+              const resJson = await res.json()
+              if (resJson.success) {
+                imageUrls.push(resJson.url)
+              }
             }
-          }
-       }
-    } else if (formData.get('type') === 'IMAGE_QUIZ') {
-       const files = formData.getAll('imageFiles') as File[]
-       for (const file of files) {
-          if (file && file.size > 0) {
-            const uploadData = new FormData()
-            uploadData.append('file', file)
-            const res = await fetch('/api/admin/upload', { method: 'POST', body: uploadData })
-            const resJson = await res.json()
-            if (resJson.success) {
-              imageUrls.push(resJson.url)
-            }
-          }
-       }
-    }
+         }
+      }
 
-    const payload = {
-      order: parseInt(formData.get('order') as string),
-      text: formData.get('text') as string,
-      hint: formData.get('hint') as string,
-      correctAnswer: formData.get('correctAnswer') as string,
-      type: formData.get('type') as 'QUIZ' | 'MANUAL' | 'IMAGE_QUIZ',
-      phase: parseInt(formData.get('phase') as string),
-      imageUrl: imageUrl || undefined,
-      imageUrls: imageUrls.length > 0 ? imageUrls : undefined
-    }
+      const payload = {
+        order: parseInt(formData.get('order') as string),
+        text: formData.get('text') as string,
+        hint: formData.get('hint') as string,
+        correctAnswer: formData.get('correctAnswer') as string,
+        type: formData.get('type') as 'QUIZ' | 'MANUAL' | 'IMAGE_QUIZ',
+        phase: parseInt(formData.get('phase') as string),
+        imageUrl: imageUrl || undefined,
+        imageUrls: imageUrls.length > 0 ? imageUrls : undefined
+      }
 
-    if (editingQuestion) {
-      await updateQuestion(editingQuestion.id, payload)
-      setEditingQuestion(null)
-    } else {
-      await addQuestion(payload)
+      if (editingQuestion) {
+        await updateQuestion(editingQuestion.id, payload)
+        setEditingQuestion(null)
+      } else {
+        await addQuestion(payload)
+      }
+      
+      try { form.reset() } catch (e) {} // Ignore reset error if unmounted
+      await fetchQuestions()
+    } catch (err: any) {
+      alert("儲存時發生錯誤: " + (err.message || String(err)))
+      console.error(err)
+    } finally {
+      setUploading(false)
     }
-    
-    const target = e.currentTarget
-    target.reset()
-    setUploading(false)
-    fetchQuestions()
   }
 
   const handleEditClick = (q: any) => {
