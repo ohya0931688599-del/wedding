@@ -10,6 +10,17 @@ export async function addQuestion(data: { order: number; text: string; hint: str
   revalidatePath('/table')
 }
 
+export async function updateQuestion(id: number, data: { order: number; text: string; hint: string; correctAnswer: string; type?: 'QUIZ' | 'MANUAL' | 'PUZZLE' | 'IMAGE_QUIZ'; phase?: number; imageUrl?: string; imageUrls?: string[] }) {
+  // Only update fields that are provided
+  const updateData: any = { ...data, phase: data.phase || 1 }
+  if (data.imageUrl === undefined) delete updateData.imageUrl
+  if (data.imageUrls === undefined) delete updateData.imageUrls
+  
+  await prisma.question.update({ where: { id }, data: updateData })
+  revalidatePath('/admin/questions')
+  revalidatePath('/table')
+}
+
 export async function deleteQuestion(id: number) {
   await prisma.question.delete({ where: { id } })
   revalidatePath('/admin/questions')
