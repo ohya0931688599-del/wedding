@@ -341,12 +341,12 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
                     </div>
                   </div>
                   <div>
-                    {status === 'IDLE' && q.type === 'QUIZ' && (
+                    {status === 'IDLE' && (q.type === 'QUIZ' || q.type === 'IMAGE_QUIZ') && (
                       <button className="btn" style={{ padding: '0.5rem 1rem', margin: 0, fontSize: '1rem' }} onClick={() => handleStartChallenge(q.id)} disabled={startingId !== null}>
                         {startingId === q.id ? '開啟中...' : '開啟挑戰'}
                       </button>
                     )}
-                    {status === 'ACTIVE' && q.type === 'QUIZ' && (
+                    {status === 'ACTIVE' && (q.type === 'QUIZ' || q.type === 'IMAGE_QUIZ') && (
                       <button className="btn" style={{ padding: '0.5rem 1rem', margin: 0, fontSize: '1rem', background: 'var(--accent-gold)', color: '#000' }} onClick={() => handleStartChallenge(q.id)}>
                         進入
                       </button>
