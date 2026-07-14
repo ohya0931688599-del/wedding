@@ -127,8 +127,8 @@ export default function QuestionsPage() {
           <input type="text" name="title" className="input-field" placeholder="例如：第一關：新郎的秘密" defaultValue={editingQuestion ? (editingQuestion.title || '') : ''} />
         </div>
         <div className="input-group">
-          <label className="input-label">題目內容</label>
-          <textarea name="text" className="input-field" required defaultValue={editingQuestion ? editingQuestion.text : ''} rows={4} style={{ resize: 'vertical' }} />
+          <label className="input-label">題目內容 {questionType === 'IMAGE_QUIZ' && <span style={{fontSize:'0.8rem', color:'#aaa'}}>(可留白)</span>}</label>
+          <textarea name="text" className="input-field" required={questionType !== 'IMAGE_QUIZ'} defaultValue={editingQuestion ? editingQuestion.text : ''} rows={4} style={{ resize: 'vertical' }} />
         </div>
         <div className="input-group">
           <label className="input-label">正確答案 (不分大小寫)</label>

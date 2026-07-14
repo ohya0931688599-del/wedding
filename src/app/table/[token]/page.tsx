@@ -79,19 +79,22 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
       osc.type = 'square';
       
       const now = ctx.currentTime;
-      // Classic emergency siren sound (Hi-Lo)
-      osc.frequency.setValueAtTime(800, now);
-      osc.frequency.setValueAtTime(1000, now + 0.4);
-      osc.frequency.setValueAtTime(800, now + 0.8);
-      osc.frequency.setValueAtTime(1000, now + 1.2);
-      osc.frequency.setValueAtTime(800, now + 1.6);
-      osc.frequency.setValueAtTime(1000, now + 2.0);
+      // Two short alert beeps
+      osc.frequency.setValueAtTime(1000, now);
       
+      // Initial volume 0
+      gain.gain.setValueAtTime(0, now);
+      
+      // First beep: 0s to 0.2s
       gain.gain.setValueAtTime(0.1, now);
-      gain.gain.linearRampToValueAtTime(0, now + 2.5);
+      gain.gain.setValueAtTime(0, now + 0.2);
+      
+      // Second beep: 0.3s to 0.5s
+      gain.gain.setValueAtTime(0.1, now + 0.3);
+      gain.gain.setValueAtTime(0, now + 0.5);
       
       osc.start(now);
-      osc.stop(now + 2.5);
+      osc.stop(now + 0.6);
     } catch(e) {
       console.error("Audio playback failed", e);
     }
