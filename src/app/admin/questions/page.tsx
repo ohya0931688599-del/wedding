@@ -123,7 +123,7 @@ export default function QuestionsPage() {
         </div>
         <div className="input-group">
           <label className="input-label">題目內容</label>
-          <input type="text" name="text" className="input-field" required defaultValue={editingQuestion ? editingQuestion.text : ''} />
+          <textarea name="text" className="input-field" required defaultValue={editingQuestion ? editingQuestion.text : ''} rows={4} style={{ resize: 'vertical' }} />
         </div>
         <div className="input-group">
           <label className="input-label">正確答案 (不分大小寫)</label>
