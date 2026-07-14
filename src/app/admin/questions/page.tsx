@@ -25,6 +25,8 @@ export default function QuestionsPage() {
     const formData = new FormData(form)
     setUploading(true)
     let imageUrl = ''
+    let imageUrls: string[] = []
+    
     if (formData.get('type') === 'PUZZLE') {
        const file = formData.get('imageFile') as File
        if (file && file.size > 0) {
@@ -36,6 +38,19 @@ export default function QuestionsPage() {
             imageUrl = resJson.url
           }
        }
+    } else if (formData.get('type') === 'IMAGE_QUIZ') {
+       const files = formData.getAll('imageFiles') as File[]
+       for (const file of files) {
+          if (file && file.size > 0) {
+            const uploadData = new FormData()
+            uploadData.append('file', file)
+            const res = await fetch('/api/admin/upload', { method: 'POST', body: uploadData })
+            const resJson = await res.json()
+            if (resJson.success) {
+              imageUrls.push(resJson.url)
+            }
+          }
+       }
     }
 
     await addQuestion({
@@ -43,9 +58,10 @@ export default function QuestionsPage() {
       text: formData.get('text') as string,
       hint: formData.get('hint') as string,
       correctAnswer: formData.get('correctAnswer') as string,
-      type: formData.get('type') as 'QUIZ' | 'MANUAL' | 'PUZZLE',
+      type: formData.get('type') as 'QUIZ' | 'MANUAL' | 'PUZZLE' | 'IMAGE_QUIZ',
       phase: parseInt(formData.get('phase') as string),
-      imageUrl: imageUrl || undefined
+      imageUrl: imageUrl || undefined,
+      imageUrls: imageUrls.length > 0 ? imageUrls : undefined
     })
     form.reset()
     setUploading(false)
@@ -64,12 +80,19 @@ export default function QuestionsPage() {
             <option value="QUIZ">計時解謎 (賓客自行作答)</option>
             <option value="MANUAL">實體考驗 (工作人員評分)</option>
             <option value="PUZZLE">拼圖考驗 (大家一起看圖找答案)</option>
+            <option value="IMAGE_QUIZ">多圖解謎 (多張圖片)</option>
           </select>
         </div>
         {questionType === 'PUZZLE' && (
           <div className="input-group">
             <label className="input-label">上傳拼圖底圖 (推薦 1000px 以上高畫質)</label>
             <input type="file" name="imageFile" accept="image/*" className="input-field" required={questionType === 'PUZZLE'} />
+          </div>
+        )}
+        {questionType === 'IMAGE_QUIZ' && (
+          <div className="input-group">
+            <label className="input-label">上傳多張圖片</label>
+            <input type="file" name="imageFiles" accept="image/*" multiple className="input-field" required={questionType === 'IMAGE_QUIZ'} />
           </div>
         )}
         <div className="input-group">
@@ -111,11 +134,18 @@ export default function QuestionsPage() {
                   <li key={q.id} style={{ padding: '1rem', border: '1px solid var(--border-gold)', borderRadius: '8px', position: 'relative' }}>
                     <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
                       {q.order}. {q.text} 
-                      <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', padding: '0.2rem 0.5rem', background: q.type === 'MANUAL' ? '#4a0e0e' : (q.type === 'PUZZLE' ? '#0f3a4e' : '#333'), borderRadius: '4px' }}>
-                        {q.type === 'MANUAL' ? '實體考驗' : (q.type === 'PUZZLE' ? '拼圖考驗' : '計時解謎')}
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', padding: '0.2rem 0.5rem', background: q.type === 'MANUAL' ? '#4a0e0e' : (q.type === 'PUZZLE' ? '#0f3a4e' : (q.type === 'IMAGE_QUIZ' ? '#4e3a0f' : '#333')), borderRadius: '4px' }}>
+                        {q.type === 'MANUAL' ? '實體考驗' : (q.type === 'PUZZLE' ? '拼圖考驗' : (q.type === 'IMAGE_QUIZ' ? '多圖解謎' : '計時解謎'))}
                       </span>
                     </div>
                     {q.imageUrl && <img src={q.imageUrl} alt="puzzle" style={{ maxHeight: '100px', borderRadius: '4px', marginBottom: '0.5rem', display: 'block' }} />}
+                    {q.imageUrls && q.imageUrls.length > 0 && (
+                      <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', marginBottom: '0.5rem' }}>
+                        {q.imageUrls.map((url: string, idx: number) => (
+                          <img key={idx} src={url} alt={`img-${idx}`} style={{ maxHeight: '80px', borderRadius: '4px' }} />
+                        ))}
+                      </div>
+                    )}
                     {q.hint && <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>提示: {q.hint}</div>}
                     <div style={{ color: 'var(--accent-gold)' }}>答案: {q.correctAnswer}</div>
                     <button 
@@ -136,11 +166,18 @@ export default function QuestionsPage() {
                   <li key={q.id} style={{ padding: '1rem', border: '1px solid var(--border-gold)', borderRadius: '8px', position: 'relative' }}>
                     <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
                       {q.order}. {q.text} 
-                      <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', padding: '0.2rem 0.5rem', background: q.type === 'MANUAL' ? '#4a0e0e' : (q.type === 'PUZZLE' ? '#0f3a4e' : '#333'), borderRadius: '4px' }}>
-                        {q.type === 'MANUAL' ? '實體考驗' : (q.type === 'PUZZLE' ? '拼圖考驗' : '計時解謎')}
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', padding: '0.2rem 0.5rem', background: q.type === 'MANUAL' ? '#4a0e0e' : (q.type === 'PUZZLE' ? '#0f3a4e' : (q.type === 'IMAGE_QUIZ' ? '#4e3a0f' : '#333')), borderRadius: '4px' }}>
+                        {q.type === 'MANUAL' ? '實體考驗' : (q.type === 'PUZZLE' ? '拼圖考驗' : (q.type === 'IMAGE_QUIZ' ? '多圖解謎' : '計時解謎'))}
                       </span>
                     </div>
                     {q.imageUrl && <img src={q.imageUrl} alt="puzzle" style={{ maxHeight: '100px', borderRadius: '4px', marginBottom: '0.5rem', display: 'block' }} />}
+                    {q.imageUrls && q.imageUrls.length > 0 && (
+                      <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', marginBottom: '0.5rem' }}>
+                        {q.imageUrls.map((url: string, idx: number) => (
+                          <img key={idx} src={url} alt={`img-${idx}`} style={{ maxHeight: '80px', borderRadius: '4px' }} />
+                        ))}
+                      </div>
+                    )}
                     {q.hint && <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>提示: {q.hint}</div>}
                     <div style={{ color: 'var(--accent-gold)' }}>答案: {q.correctAnswer}</div>
                     <button 

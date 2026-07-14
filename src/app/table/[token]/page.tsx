@@ -284,6 +284,18 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
                 <img src={activeQuestion.imageUrl} alt="puzzle" style={{ width: '100%', display: 'block', touchAction: 'pan-x pan-y pinch-zoom' }} />
               </div>
             )}
+            {activeQuestion?.type === 'IMAGE_QUIZ' && activeQuestion.imageUrls && activeQuestion.imageUrls.length > 0 && (
+              <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ padding: '0.5rem', background: 'rgba(212, 175, 55, 0.1)', color: 'var(--accent-gold)', fontSize: '0.9rem', borderRadius: '8px' }}>
+                  👉 請雙指放大圖片尋找線索，或長按圖片儲存
+                </div>
+                {activeQuestion.imageUrls.map((url: string, idx: number) => (
+                  <div key={idx} style={{ border: '1px solid var(--border-gold)', borderRadius: '8px', overflow: 'hidden' }}>
+                    <img src={url} alt={`quiz-img-${idx}`} style={{ width: '100%', display: 'block', touchAction: 'pan-x pan-y pinch-zoom' }} />
+                  </div>
+                ))}
+              </div>
+            )}
             {activeQuestion?.hint && <p style={{ color: 'var(--accent-gold)', marginBottom: '2rem', fontStyle: 'italic' }}>提示：{activeQuestion.hint}</p>}
             
             <form onSubmit={handleChallengeSubmit}>

@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
 // --- Questions ---
-export async function addQuestion(data: { order: number; text: string; hint: string; correctAnswer: string; type?: 'QUIZ' | 'MANUAL' | 'PUZZLE'; phase?: number; imageUrl?: string }) {
+export async function addQuestion(data: { order: number; text: string; hint: string; correctAnswer: string; type?: 'QUIZ' | 'MANUAL' | 'PUZZLE' | 'IMAGE_QUIZ'; phase?: number; imageUrl?: string; imageUrls?: string[] }) {
   await prisma.question.create({ data: { ...data, phase: data.phase || 1 } })
   revalidatePath('/admin/questions')
   revalidatePath('/table')
