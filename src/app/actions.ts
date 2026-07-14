@@ -13,13 +13,13 @@ function normalizeAnswer(str: string) {
 }
 
 // --- Questions ---
-export async function addQuestion(data: { order: number; text: string; hint: string; correctAnswer: string; type?: 'QUIZ' | 'MANUAL' | 'PUZZLE' | 'IMAGE_QUIZ'; phase?: number; imageUrl?: string; imageUrls?: string[] }) {
+export async function addQuestion(data: { order: number; title?: string; text: string; hint: string; correctAnswer: string; type?: 'QUIZ' | 'MANUAL' | 'PUZZLE' | 'IMAGE_QUIZ'; phase?: number; imageUrl?: string; imageUrls?: string[] }) {
   await prisma.question.create({ data: { ...data, phase: data.phase || 1 } })
   revalidatePath('/admin/questions')
   revalidatePath('/table')
 }
 
-export async function updateQuestion(id: number, data: { order: number; text: string; hint: string; correctAnswer: string; type?: 'QUIZ' | 'MANUAL' | 'PUZZLE' | 'IMAGE_QUIZ'; phase?: number; imageUrl?: string; imageUrls?: string[] }) {
+export async function updateQuestion(id: number, data: { order: number; title?: string; text: string; hint: string; correctAnswer: string; type?: 'QUIZ' | 'MANUAL' | 'PUZZLE' | 'IMAGE_QUIZ'; phase?: number; imageUrl?: string; imageUrls?: string[] }) {
   // Only update fields that are provided
   const updateData: any = { ...data, phase: data.phase || 1 }
   if (data.imageUrl === undefined) delete updateData.imageUrl

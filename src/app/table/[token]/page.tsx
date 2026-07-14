@@ -275,7 +275,12 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
             <div style={{ color: 'var(--accent-gold)', fontSize: '2.5rem', fontWeight: 'bold', margin: '1rem 0' }}>
               ⏱️ {elapsed} 秒
             </div>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', lineHeight: '1.4' }}>{activeQuestion?.text}</h2>
+            {activeQuestion?.title && (
+              <div style={{ color: 'var(--accent-gold)', fontSize: '1.2rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                【{activeQuestion.title}】
+              </div>
+            )}
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}>{activeQuestion?.text}</h2>
             {activeQuestion?.type === 'PUZZLE' && activeQuestion.imageUrl && (
               <div style={{ marginBottom: '1.5rem', border: '1px solid var(--border-gold)', borderRadius: '8px', overflow: 'hidden' }}>
                 <div style={{ padding: '0.5rem', background: 'rgba(212, 175, 55, 0.1)', color: 'var(--accent-gold)', fontSize: '0.9rem' }}>
@@ -332,7 +337,7 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
               return (
                 <div key={q.id} className="card" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>任務 {idx + 1} {q.type === 'MANUAL' ? '(工作人員評分)' : ''}</div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{q.title ? q.title : `任務 ${idx + 1}`} {q.type === 'MANUAL' ? '(工作人員評分)' : ''}</div>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
                       {status === 'COMPLETED' ? (q.type === 'MANUAL' ? `得分：${tc.manualScore} 分` : `通關耗時：${tc.timeSpent} 秒`) : ''}
                       {status === 'FAILED' ? '挑戰失敗 ❌' : ''}

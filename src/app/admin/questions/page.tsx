@@ -47,6 +47,7 @@ export default function QuestionsPage() {
 
       const payload = {
         order: parseInt(formData.get('order') as string),
+        title: formData.get('title') as string || undefined,
         text: formData.get('text') as string,
         hint: formData.get('hint') as string,
         correctAnswer: formData.get('correctAnswer') as string,
@@ -122,6 +123,10 @@ export default function QuestionsPage() {
           <input type="number" name="order" className="input-field" required defaultValue={editingQuestion ? editingQuestion.order : ''} />
         </div>
         <div className="input-group">
+          <label className="input-label">題目名稱 (選填，大廳顯示用)</label>
+          <input type="text" name="title" className="input-field" placeholder="例如：第一關：新郎的秘密" defaultValue={editingQuestion ? (editingQuestion.title || '') : ''} />
+        </div>
+        <div className="input-group">
           <label className="input-label">題目內容</label>
           <textarea name="text" className="input-field" required defaultValue={editingQuestion ? editingQuestion.text : ''} rows={4} style={{ resize: 'vertical' }} />
         </div>
@@ -155,7 +160,7 @@ export default function QuestionsPage() {
                 {questions.filter(q => q.phase === 1).map(q => (
                   <li key={q.id} style={{ padding: '1rem', border: '1px solid var(--border-gold)', borderRadius: '8px', position: 'relative' }}>
                     <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                      {q.order}. {q.text} 
+                      {q.order}. {q.title ? <span style={{color:'var(--accent-gold)'}}>【{q.title}】</span> : ''} {q.text} 
                       <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', padding: '0.2rem 0.5rem', background: q.type === 'MANUAL' ? '#4a0e0e' : (q.type === 'PUZZLE' ? '#0f3a4e' : (q.type === 'IMAGE_QUIZ' ? '#4e3a0f' : '#333')), borderRadius: '4px' }}>
                         {q.type === 'MANUAL' ? '實體考驗' : (q.type === 'PUZZLE' ? '拼圖考驗' : (q.type === 'IMAGE_QUIZ' ? '多圖解謎' : '計時解謎'))}
                       </span>
@@ -194,7 +199,7 @@ export default function QuestionsPage() {
                 {questions.filter(q => q.phase === 2).map(q => (
                   <li key={q.id} style={{ padding: '1rem', border: '1px solid var(--border-gold)', borderRadius: '8px', position: 'relative' }}>
                     <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                      {q.order}. {q.text} 
+                      {q.order}. {q.title ? <span style={{color:'var(--accent-gold)'}}>【{q.title}】</span> : ''} {q.text} 
                       <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', padding: '0.2rem 0.5rem', background: q.type === 'MANUAL' ? '#4a0e0e' : (q.type === 'PUZZLE' ? '#0f3a4e' : (q.type === 'IMAGE_QUIZ' ? '#4e3a0f' : '#333')), borderRadius: '4px' }}>
                         {q.type === 'MANUAL' ? '實體考驗' : (q.type === 'PUZZLE' ? '拼圖考驗' : (q.type === 'IMAGE_QUIZ' ? '多圖解謎' : '計時解謎'))}
                       </span>
