@@ -53,11 +53,20 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
   useEffect(() => {
     if (successMsg) return // Pause polling during success delay
     fetchTableState()
-    // Use dynamic polling interval (2s to 3.5s) for faster sync between guests
-    const randomInterval = Math.floor(Math.random() * 1500) + 2000
+    
+    // 智慧型動態輪詢頻率 (保護資料庫)
+    // 只有在「解謎挑戰中」才需要 2~3.5 秒的高速同步，大廳或緊急任務拍照時恢復 7~10 秒
+    let baseInterval = 7000
+    let jitter = 3000
+    if (table?.activeChallengeId && (!settings?.activeEmergencyMode || settings.activeEmergencyMode === 0)) {
+      baseInterval = 2000
+      jitter = 1500
+    }
+    
+    const randomInterval = Math.floor(Math.random() * jitter) + baseInterval
     const interval = setInterval(fetchTableState, randomInterval)
     return () => clearInterval(interval)
-  }, [token, successMsg])
+  }, [token, successMsg, table?.activeChallengeId, settings?.activeEmergencyMode])
 
   // Fetch leaderboard data only when opened
   useEffect(() => {
