@@ -53,8 +53,8 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
   useEffect(() => {
     if (successMsg) return // Pause polling during success delay
     fetchTableState()
-    // Use dynamic polling interval (7s to 10s) to prevent thundering herd effect on the database
-    const randomInterval = Math.floor(Math.random() * 3000) + 7000
+    // Use dynamic polling interval (2s to 3.5s) for faster sync between guests
+    const randomInterval = Math.floor(Math.random() * 1500) + 2000
     const interval = setInterval(fetchTableState, randomInterval)
     return () => clearInterval(interval)
   }, [token, successMsg])
