@@ -51,12 +51,13 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
   }
 
   useEffect(() => {
+    if (successMsg) return // Pause polling during success delay
     fetchTableState()
     // Use dynamic polling interval (7s to 10s) to prevent thundering herd effect on the database
     const randomInterval = Math.floor(Math.random() * 3000) + 7000
     const interval = setInterval(fetchTableState, randomInterval)
     return () => clearInterval(interval)
-  }, [token])
+  }, [token, successMsg])
 
   // Fetch leaderboard data only when opened
   useEffect(() => {
@@ -109,14 +110,14 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
 
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
-    if (table?.activeChallengeId && table?.challengeStartTime) {
+    if (table?.activeChallengeId && table?.challengeStartTime && !successMsg) {
       const timer = setInterval(() => {
         const start = new Date(table.challengeStartTime).getTime()
         setElapsed(Math.floor((Date.now() - start) / 1000))
       }, 1000)
       return () => clearInterval(timer)
     }
-  }, [table?.activeChallengeId, table?.challengeStartTime])
+  }, [table?.activeChallengeId, table?.challengeStartTime, successMsg])
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -187,13 +188,19 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
         setError(res.error)
       } else if (res.correct) {
         setSuccessMsg(`答對了！花費時間：${res.timeSpent} 秒`)
-        setAnswerInput('')
+        // Delay moving to the next question by 3 seconds
+        setTimeout(() => {
+          setSuccessMsg('')
+          setAnswerInput('')
+          fetchTableState()
+          setSubmitting(false)
+        }, 3000)
+        return // Return early so we don't clear submitting state yet
       } else if (res.failed) {
         setError('已達錯誤上限！任務失敗。')
       } else {
         setError(`答案錯誤！全桌剩餘嘗試次數：${res.remaining} 次`)
       }
-      // Do not await to free UI quickly
       fetchTableState()
     } catch (err) {
       setError('系統錯誤')
@@ -306,18 +313,24 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
             )}
             {activeQuestion?.hint && <p style={{ color: 'var(--accent-gold)', marginBottom: '2rem', fontStyle: 'italic' }}>提示：{activeQuestion.hint}</p>}
             
-            <form onSubmit={handleChallengeSubmit}>
-              <div className="input-group">
-                <input type="text" className="input-field text-center" placeholder="請輸入答案" value={answerInput} onChange={(e) => setAnswerInput(e.target.value)} required disabled={submitting} />
+            {successMsg ? (
+              <div style={{ padding: '2rem 0', textAlign: 'center', animation: 'fadeIn 0.5s' }}>
+                <div style={{ color: '#44ff44', fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>🎉 {successMsg}</div>
+                <div style={{ color: 'var(--accent-gold)', fontSize: '1.1rem' }}>即將進入下一關...</div>
               </div>
-              {error && <div style={{ color: '#ff4444', marginBottom: '1rem' }}>{error}</div>}
-              {successMsg && <div style={{ color: '#44ff44', marginBottom: '1rem' }}>{successMsg}</div>}
-              
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
-                <button type="submit" className="btn" disabled={submitting} style={{ flex: 1 }}>{submitting ? '送出中...' : '送出答案'}</button>
-                <button type="button" onClick={handleGiveUp} className="btn" disabled={submitting} style={{ backgroundColor: '#333', borderColor: '#555', color: '#ccc' }}>放棄</button>
-              </div>
-            </form>
+            ) : (
+              <form onSubmit={handleChallengeSubmit}>
+                <div className="input-group">
+                  <input type="text" className="input-field text-center" placeholder="請輸入答案" value={answerInput} onChange={(e) => setAnswerInput(e.target.value)} required disabled={submitting} />
+                </div>
+                {error && <div style={{ color: '#ff4444', marginBottom: '1rem' }}>{error}</div>}
+                
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
+                  <button type="submit" className="btn" disabled={submitting} style={{ flex: 1 }}>{submitting ? '送出中...' : '送出答案'}</button>
+                  <button type="button" onClick={handleGiveUp} className="btn" disabled={submitting} style={{ backgroundColor: '#333', borderColor: '#555', color: '#ccc' }}>放棄</button>
+                </div>
+              </form>
+            )}
             <div style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>
               全桌剩餘嘗試次數：{10 - (tableChallenge?.wrongAttempts || 0)} 次
             </div>
