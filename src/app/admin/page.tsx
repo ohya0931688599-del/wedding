@@ -59,6 +59,14 @@ export default async function AdminDashboard() {
       </ul>
 
       <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--border-gold)', textAlign: 'center' }}>
+        <h3 style={{ color: 'var(--accent-gold)', marginBottom: '1rem' }}>照片備份區</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>活動結束後，請務必在此下載照片，以免伺服器重置後遺失。</p>
+        <a href="/api/download-photos" target="_blank" className="btn" style={{ display: 'inline-block', backgroundColor: '#1e40af', color: 'white', border: 'none', padding: '0.8rem 2rem' }}>
+          💾 一鍵打包下載所有相片 (ZIP)
+        </a>
+      </div>
+
+      <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid var(--border-gold)', textAlign: 'center' }}>
         <h3 style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>危險操作區 (測試用)</h3>
         <form action={async () => {
           'use server'
