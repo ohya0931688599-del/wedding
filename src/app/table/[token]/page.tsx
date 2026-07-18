@@ -334,14 +334,24 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
                 </div>
                 {error && <div style={{ color: '#ff4444', marginBottom: '1rem' }}>{error}</div>}
                 
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
-                  <button type="submit" className="btn" disabled={submitting} style={{ flex: 1 }}>{submitting ? '送出中...' : '送出答案'}</button>
-                  <button type="button" onClick={handleGiveUp} className="btn" disabled={submitting} style={{ backgroundColor: '#333', borderColor: '#555', color: '#ccc' }}>放棄</button>
+                <div style={{ marginTop: '1.5rem' }}>
+                  <button type="submit" className="btn" disabled={submitting} style={{ width: '100%', padding: '1rem', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                    {submitting ? '送出中...' : '送出答案'}
+                  </button>
                 </div>
               </form>
             )}
-            <div style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>
-              全桌剩餘嘗試次數：{10 - (tableChallenge?.wrongAttempts || 0)} 次
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2.5rem', borderTop: '1px solid #333', paddingTop: '1rem' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                全桌剩餘嘗試次數：{10 - (tableChallenge?.wrongAttempts || 0)} 次
+              </div>
+              
+              {!successMsg && (
+                <button type="button" onClick={handleGiveUp} disabled={submitting} style={{ backgroundColor: '#2a2a2a', border: '1px solid #444', color: '#888', padding: '0.4rem 0.8rem', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                  放棄此題
+                </button>
+              )}
             </div>
           </div>
         </div>
