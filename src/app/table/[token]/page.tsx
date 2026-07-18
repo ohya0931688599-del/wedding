@@ -356,7 +356,7 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
               </div>
               
               {!successMsg && (
-                <button type="button" onClick={handleGiveUp} disabled={submitting} style={{ backgroundColor: '#2a2a2a', border: '1px solid #444', color: '#888', padding: '0.4rem 0.8rem', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                <button type="button" onClick={handleGiveUp} disabled={submitting} style={{ backgroundColor: '#aa0000', border: 'none', color: 'white', padding: '0.4rem 0.8rem', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }}>
                   放棄此題
                 </button>
               )}
