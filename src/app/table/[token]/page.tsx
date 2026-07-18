@@ -55,9 +55,9 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
     fetchTableState()
     
     // 智慧型動態輪詢頻率 (保護資料庫)
-    // 只有在「解謎挑戰中」才需要 2~3.5 秒的高速同步，大廳或緊急任務拍照時恢復 7~10 秒
-    let baseInterval = 7000
-    let jitter = 3000
+    // 為了配合免費版伺服器記憶體限制，大廳或緊急任務拍照時恢復 20~30 秒 (大幅減輕伺服器負載)
+    let baseInterval = 20000
+    let jitter = 10000
     if (table?.activeChallengeId && (!settings?.activeEmergencyMode || settings.activeEmergencyMode === 0)) {
       baseInterval = 2000
       jitter = 1500
