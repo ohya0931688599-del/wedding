@@ -414,10 +414,10 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
               setShowLeaderboard(true)
               getTables().then(setAllTables).catch(console.error) // Refresh immediately
             }}
-            style={{ position: 'fixed', bottom: '2rem', right: '1.5rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
+            style={{ position: 'fixed', bottom: '2rem', right: '1.5rem', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
           >
-            <div style={{ backgroundColor: 'rgba(0,0,0,0.7)', color: 'var(--accent-gold)', padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.9rem', border: '1px solid rgba(212, 175, 55, 0.5)', boxShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
-              即時戰況與排名
+            <div style={{ backgroundColor: 'rgba(0,0,0,0.7)', color: 'var(--accent-gold)', padding: '0.3rem 0.6rem', borderRadius: '20px', fontSize: '0.8rem', border: '1px solid rgba(212, 175, 55, 0.5)', boxShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+              進度與排名
             </div>
             <button 
               style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-gold), #b8860b)', color: '#000', fontSize: '1.5rem', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.5)', pointerEvents: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
