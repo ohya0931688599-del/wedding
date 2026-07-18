@@ -120,13 +120,21 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
     if (table?.activeChallengeId && table?.challengeStartTime && !successMsg) {
-      const timer = setInterval(() => {
-        const start = new Date(table.challengeStartTime).getTime()
-        setElapsed(Math.floor((Date.now() - start) / 1000))
-      }, 1000)
+      const startTime = new Date(table.challengeStartTime).getTime()
+      
+      const updateTimer = () => {
+        let diff = Math.floor((Date.now() - startTime) / 1000)
+        if (diff < 0) diff = 0
+        setElapsed(diff)
+      }
+      
+      // Update immediately
+      updateTimer()
+      const timer = setInterval(updateTimer, 1000)
       return () => clearInterval(timer)
     }
-  }, [table?.activeChallengeId, table?.challengeStartTime, successMsg])
+  }, [table?.activeChallengeId, table?.challengeStartTime ? new Date(table.challengeStartTime).getTime() : null, successMsg])
+
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -401,15 +409,22 @@ export default function TableQuizPage({ params }: { params: Promise<{ token: str
           </div>
 
           {/* FAB Leaderboard Button */}
-          <button 
+          <div 
             onClick={() => {
               setShowLeaderboard(true)
               getTables().then(setAllTables).catch(console.error) // Refresh immediately
             }}
-            style={{ position: 'fixed', bottom: '2rem', right: '2rem', width: '60px', height: '60px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-gold), #b8860b)', color: '#000', fontSize: '1.5rem', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.5)', cursor: 'pointer', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+            style={{ position: 'fixed', bottom: '2rem', right: '1.5rem', zIndex: 100, display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
           >
-            🏆
-          </button>
+            <div style={{ backgroundColor: 'rgba(0,0,0,0.7)', color: 'var(--accent-gold)', padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.9rem', border: '1px solid rgba(212, 175, 55, 0.5)', boxShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+              即時戰況與排名
+            </div>
+            <button 
+              style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-gold), #b8860b)', color: '#000', fontSize: '1.5rem', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.5)', pointerEvents: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+            >
+              🏆
+            </button>
+          </div>
 
           {/* Leaderboard Modal */}
           {showLeaderboard && (
