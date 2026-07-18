@@ -390,3 +390,29 @@ export async function resetGame() {
   revalidatePath('/admin')
   revalidatePath('/table')
 }
+
+export async function resetTableChallenge(tableId: number, questionId: number) {
+  // Reset the challenge record
+  await prisma.tableChallenge.updateMany({
+    where: { tableId, questionId },
+    data: { status: 'IDLE', timeSpent: 0, wrongAttempts: 0, manualScore: null }
+  })
+  
+  // Clear any submitted answers for this table + question
+  await prisma.answer.deleteMany({
+    where: { tableId, questionId }
+  })
+  
+  // If the table is currently active in THIS challenge, clear their active state
+  const table = await prisma.table.findUnique({ where: { id: tableId } })
+  if (table?.activeChallengeId === questionId) {
+    await prisma.table.update({
+      where: { id: tableId },
+      data: { activeChallengeId: null, challengeStartTime: null }
+    })
+  }
+  
+  revalidatePath('/admin/tables')
+  revalidatePath('/admin')
+  revalidatePath('/table')
+}

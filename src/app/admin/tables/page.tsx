@@ -1,17 +1,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { addTable, deleteTable, getTables } from '@/app/actions'
+import { addTable, deleteTable, getTables, getQuestions, resetTableChallenge } from '@/app/actions'
 import Link from 'next/link'
 
 export default function TablesPage() {
   const [tables, setTables] = useState<any[]>([])
+  const [questions, setQuestions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [origin, setOrigin] = useState('')
 
   const fetchTables = async () => {
     const data = await getTables()
+    const qData = await getQuestions()
     setTables(data)
+    setQuestions(qData)
     setLoading(false)
   }
 
@@ -61,6 +64,39 @@ export default function TablesPage() {
                   網址: <Link href={`/table/${t.token}`} style={{ color: 'var(--accent-gold)' }} target="_blank">{origin}/table/{t.token}</Link>
                 </div>
                 <div style={{ color: 'var(--accent-gold)' }}>目前分數: {t.score}</div>
+                
+                <div style={{ marginTop: '1rem', borderTop: '1px solid #333', paddingTop: '1rem' }}>
+                  <h4 style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>任務進度與重置</h4>
+                  <div style={{ display: 'grid', gap: '0.5rem', fontSize: '0.9rem' }}>
+                    {t.tableChallenges?.map((tc: any) => {
+                      const q = questions.find((q: any) => q.id === tc.questionId)
+                      if (!q) return null
+                      return (
+                        <div key={tc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '4px' }}>
+                          <div>
+                            <span>{q.phase === 2 ? '[階段2]' : '[階段1]'} {q.title || `任務 ${q.order}`}</span>
+                            <span style={{ marginLeft: '1rem', color: tc.status === 'COMPLETED' ? '#44ff44' : tc.status === 'FAILED' ? '#ff4444' : '#ffb400' }}>
+                              {tc.status === 'COMPLETED' ? '已完成' : tc.status === 'FAILED' ? '挑戰失敗' : '進行中'}
+                            </span>
+                            {tc.wrongAttempts > 0 && <span style={{ marginLeft: '0.5rem', color: '#ff4444' }}>(錯 {tc.wrongAttempts} 次)</span>}
+                          </div>
+                          <button 
+                            onClick={async () => {
+                              if (confirm(`確定要重置 ${t.name} 的「${q.title || `任務 ${q.order}`}」嗎？這會清除這桌對此題的錯誤次數與過關紀錄。`)) {
+                                await resetTableChallenge(t.id, q.id)
+                                fetchTables()
+                              }
+                            }}
+                            style={{ background: '#333', color: '#fff', border: '1px solid #555', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}
+                          >
+                            重置
+                          </button>
+                        </div>
+                      )
+                    })}
+                    {(!t.tableChallenges || t.tableChallenges.length === 0) && <div style={{ color: '#666' }}>尚未解鎖任何任務</div>}
+                  </div>
+                </div>
                 <button 
                   onClick={async () => { await deleteTable(t.id); fetchTables(); }}
                   style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', color: '#ff4444', border: 'none', cursor: 'pointer' }}>
